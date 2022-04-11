@@ -20,8 +20,8 @@ export class WalletEntity {
   @UpdateDateColumn({ type: 'timestamp with time zone', name: 'updated_at' })
   updatedAt: Date;
 
-  @Column({ type: 'int' })
-  balance: number;
+  @Column({ type: 'int', default: 0 })
+  balance?: number;
 
   @Column({ type: 'boolean', name: 'account_closed', default: false })
   accountClosed?: boolean;
