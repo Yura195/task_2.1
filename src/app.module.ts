@@ -5,6 +5,8 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { config } from './config/config';
 import { typeOrmConfig } from './config/typeorm.config';
+import { TransactionsModule } from './transactions/transactions.module';
+import { WalletsModule } from './wallets/wallets.module';
 
 @Module({
   imports: [
@@ -15,6 +17,8 @@ import { typeOrmConfig } from './config/typeorm.config';
       debug: true,
       typePaths: ['./**/*.graphql'],
     }),
+    WalletsModule,
+    TransactionsModule,
   ],
   controllers: [],
   providers: [],
