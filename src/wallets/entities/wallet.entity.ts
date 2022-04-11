@@ -23,6 +23,9 @@ export class WalletEntity {
   @Column({ type: 'int' })
   balance: number;
 
+  @Column({ type: 'boolean', name: 'account_closed', default: false })
+  accountClosed?: boolean;
+
   @OneToMany(() => TransactionEntity, (transaction) => transaction.wallet)
   transactions: TransactionEntity[];
 }
