@@ -21,10 +21,10 @@ export class WalletEntity {
   updatedAt: Date;
 
   @Column({ type: 'int', default: 0 })
-  balance?: number;
+  balance: number;
 
   @Column({ type: 'boolean', name: 'account_closed', default: false })
-  accountClosed?: boolean;
+  accountClosed: boolean;
 
   @OneToMany(() => TransactionEntity, (transaction) => transaction.wallet)
   transactions: TransactionEntity[];

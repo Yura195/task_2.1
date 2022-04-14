@@ -1,5 +1,6 @@
 import { WalletEntity } from '../../wallets/entities/wallet.entity';
 import {
+  Column,
   CreateDateColumn,
   Entity,
   ManyToOne,
@@ -18,6 +19,12 @@ export class TransactionEntity {
 
   @UpdateDateColumn({ type: 'timestamp with time zone', name: 'updated_at' })
   updatedAt: Date;
+
+  @Column({ type: 'int' })
+  amount: number;
+
+  @Column({ type: 'varchar' })
+  description: string;
 
   @ManyToOne(() => WalletEntity, (wallet) => wallet.transactions)
   wallet: WalletEntity;

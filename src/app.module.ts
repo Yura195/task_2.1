@@ -15,12 +15,13 @@ import { WalletsModule } from './wallets/wallets.module';
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       debug: true,
-      typePaths: ['./**/*.graphql'],
+      typePaths: ['./**/*.gql'],
+      buildSchemaOptions: {
+        dateScalarMode: 'timestamp',
+      },
     }),
     WalletsModule,
     TransactionsModule,
   ],
-  controllers: [],
-  providers: [],
 })
 export class AppModule {}

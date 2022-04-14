@@ -1,0 +1,45 @@
+scalar Date
+
+type Wallet {
+    id: String
+    createdAt: Date
+    updatedAt: Date
+    balance: Int
+    accountClosed: Boolean
+    transactions: [Transaction]
+}
+
+type Transaction {
+    id: String
+    createdAt: Date
+    updatedAt: Date
+    amount:Int
+    description: String
+    wallet: Wallet
+}
+
+input CreateTransactionInput {
+    amount:Int
+    description: String
+    walletId: String
+}
+
+input CloseWalletInput {
+    id: String
+    flag: Boolean
+}
+
+type Query {
+    wallet(id:String):Wallet
+    wallets:[Wallet]
+    transactions:[Transaction]
+    transaction(id: String):Transaction
+}
+
+type Mutation {
+    create:Wallet
+    close(input:CloseWalletInput):Wallet
+    deposit(input:CreateTransactionInput):String
+    withdraw(input:CreateTransactionInput):String
+}
+
