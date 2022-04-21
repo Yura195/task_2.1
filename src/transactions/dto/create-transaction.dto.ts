@@ -1,5 +1,6 @@
-export interface CreateTransactionDto {
-  amount: number;
-  description: string;
-  walletId: string;
+export class CreateTransactionDto {
+  readonly amount: number;
+  readonly description: string;
+  readonly walletId?: string;
+  readonly fromId?: string;
 }

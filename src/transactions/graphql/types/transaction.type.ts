@@ -1,4 +1,4 @@
-import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { Field, Float, ObjectType } from '@nestjs/graphql';
 import { WalletType } from 'src/wallets/graphql/types/wallet.type';
 
 @ObjectType()
@@ -12,7 +12,7 @@ export class TransactionType {
   @Field(() => Date)
   updatedAt: Date;
 
-  @Field(() => Int)
+  @Field(() => Float)
   amount: number;
 
   @Field(() => String)
@@ -20,4 +20,7 @@ export class TransactionType {
 
   @Field(() => WalletType)
   wallet: WalletType;
+
+  @Field(() => WalletType)
+  from: WalletType;
 }

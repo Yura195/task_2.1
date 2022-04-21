@@ -20,12 +20,19 @@ export class TransactionEntity {
   @UpdateDateColumn({ type: 'timestamp with time zone', name: 'updated_at' })
   updatedAt: Date;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'float' })
   amount: number;
 
   @Column({ type: 'varchar' })
   description: string;
 
-  @ManyToOne(() => WalletEntity, (wallet) => wallet.transactions)
+  @ManyToOne(() => WalletEntity, (wallet) => wallet.transactions, {
+    nullable: true,
+  })
   wallet: WalletEntity;
+
+  @ManyToOne(() => WalletEntity, (wallet) => wallet.transactions, {
+    nullable: true,
+  })
+  from: WalletEntity;
 }

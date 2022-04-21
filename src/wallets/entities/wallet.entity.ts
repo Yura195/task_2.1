@@ -3,10 +3,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { UserEntity } from '../../users/entities/user.entity';
 
 export const WALLET_TABLE_NAME = 'wallets';
 @Entity({ name: WALLET_TABLE_NAME })
@@ -20,7 +22,7 @@ export class WalletEntity {
   @UpdateDateColumn({ type: 'timestamp with time zone', name: 'updated_at' })
   updatedAt: Date;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ type: 'float', default: 0 })
   balance: number;
 
   @Column({ type: 'boolean', name: 'account_closed', default: false })
@@ -28,4 +30,7 @@ export class WalletEntity {
 
   @OneToMany(() => TransactionEntity, (transaction) => transaction.wallet)
   transactions: TransactionEntity[];
+
+  @ManyToOne(() => UserEntity, (user) => user.wallets)
+  user: UserEntity;
 }

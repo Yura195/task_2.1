@@ -10,11 +10,11 @@ export class TransactionsResolver {
   async transaction(
     @Args('id', { type: () => String }) id: string,
   ): Promise<TransactionType> {
-    return this._transactionService.transaction(id);
+    return await this._transactionService.transaction(id);
   }
 
   @Query(() => [TransactionType])
   async transactions(): Promise<TransactionType[]> {
-    return this._transactionService.transactions();
+    return await this._transactionService.transactions();
   }
 }

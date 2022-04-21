@@ -1,34 +1,38 @@
 import { CloseWalletDto } from './dto/close-wallet.dto';
-import {
-  forwardRef,
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { WalletEntity } from './entities/wallet.entity';
 import { TransactionsService } from 'src/transactions/transactions.service';
 import { CreateTransactionDto } from 'src/transactions/dto/create-transaction.dto';
+import { UsersService } from 'src/users/users.service';
+import { UserEntity } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class WalletsService {
   constructor(
     @InjectRepository(WalletEntity)
     private readonly _walletRepository: Repository<WalletEntity>,
-    @Inject(forwardRef(() => TransactionsService))
+    @InjectRepository(UserEntity)
+    private readonly _userRepository: Repository<UserEntity>,
     private readonly _transactionsService: TransactionsService,
+    private readonly _userService: UsersService,
   ) {}
 
-  async create(): Promise<WalletEntity> {
-    const wallet = await this._walletRepository.create();
+  async createWallet(userId: string): Promise<WalletEntity> {
+    const user = await this._userService.user(userId);
+    if (!user) {
+      throw new HttpException('This user is not found', HttpStatus.NOT_FOUND);
+    }
+    const wallet = await this._walletRepository.create({ user });
+    user.wallets.push(wallet);
+    await this._userRepository.save(user);
     return await this._walletRepository.save(wallet);
   }
 
   async wallet(id: string): Promise<WalletEntity> {
     const wallet = await this._walletRepository.findOne(id, {
-      relations: ['transactions'],
+      relations: ['transactions', 'user'],
     });
     if (!wallet) {
       throw new HttpException('This wallet is not found', HttpStatus.NOT_FOUND);
@@ -38,11 +42,16 @@ export class WalletsService {
 
   async wallets(): Promise<WalletEntity[]> {
     return await this._walletRepository.find({
-      relations: ['transactions'],
+      relations: [
+        'user',
+        'transactions',
+        'transactions.wallet',
+        'transactions.from',
+      ],
     });
   }
 
-  async close(dto: CloseWalletDto): Promise<WalletEntity> {
+  async closeWallet(dto: CloseWalletDto): Promise<WalletEntity> {
     const { id, flag } = dto;
     const wallet = await this.wallet(id);
     wallet.accountClosed = flag;
@@ -97,6 +106,46 @@ export class WalletsService {
     });
 
     wallet.transactions.push(transaction);
+
+    await this._walletRepository.save(wallet);
+    return transaction.id;
+  }
+
+  async transfer(dto: CreateTransactionDto): Promise<string> {
+    const { amount, description, walletId, fromId } = dto;
+
+    const wallet = await this.wallet(walletId);
+
+    if (!wallet) {
+      throw new HttpException('This wallet is not found', HttpStatus.NOT_FOUND);
+    }
+
+    const senderWallet = await this.wallet(fromId);
+
+    if (!senderWallet) {
+      throw new HttpException(
+        "This sender's wallet is not found",
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    senderWallet.balance -= amount;
+
+    if (senderWallet.balance < 0) {
+      throw new Error('Not enough money');
+    }
+
+    wallet.balance += amount;
+
+    const transaction = await this._transactionsService.create({
+      amount,
+      description,
+      walletId,
+      fromId,
+    });
+
+    wallet.transactions.push(transaction);
+    senderWallet.transactions.push(transaction);
 
     await this._walletRepository.save(wallet);
     return transaction.id;

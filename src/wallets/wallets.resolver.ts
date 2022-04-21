@@ -13,22 +13,26 @@ export class WalletsResolver {
   async wallet(
     @Args('id', { type: () => String }) id: string,
   ): Promise<WalletType> {
-    return this._walletService.wallet(id);
+    return await this._walletService.wallet(id);
   }
 
   @Query(() => [WalletType])
   async wallets(): Promise<WalletType[]> {
-    return this._walletService.wallets();
+    return await this._walletService.wallets();
   }
 
-  @Mutation(() => WalletType, { name: 'create' })
-  async create(): Promise<WalletType> {
-    return this._walletService.create();
+  @Mutation(() => WalletType, { name: 'createWallet' })
+  async createWallet(
+    @Args('userId', { type: () => String }) userId: string,
+  ): Promise<WalletType> {
+    return await this._walletService.createWallet(userId);
   }
 
-  @Mutation(() => WalletType, { name: 'close' })
-  async close(@Args('input', new ValidationPipe()) input: CloseWalletInput) {
-    return await this._walletService.close(input);
+  @Mutation(() => WalletType, { name: 'closeWallet' })
+  async closeWallet(
+    @Args('input', new ValidationPipe()) input: CloseWalletInput,
+  ): Promise<WalletType> {
+    return await this._walletService.closeWallet(input);
   }
 
   @Mutation(() => WalletType, { name: 'withdraw' })
@@ -43,5 +47,12 @@ export class WalletsResolver {
     @Args('input', new ValidationPipe()) input: CreateTransactionInput,
   ): Promise<string> {
     return await this._walletService.deposit(input);
+  }
+
+  @Mutation(() => WalletType, { name: 'transfer' })
+  async transfer(
+    @Args('input', new ValidationPipe()) input: CreateTransactionInput,
+  ): Promise<string> {
+    return await this._walletService.transfer(input);
   }
 }

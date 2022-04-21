@@ -4,24 +4,37 @@ type Wallet {
     id: String
     createdAt: Date
     updatedAt: Date
-    balance: Int
+    balance: Float
     accountClosed: Boolean
     transactions: [Transaction]
+    user: User
+}
+
+type User {
+    id: String
+    name: String
+    email: String
+    createdAt: Date
+    updatedAt: Date
+    deletedAt: Date
+    wallets: [Wallet]
 }
 
 type Transaction {
     id: String
     createdAt: Date
     updatedAt: Date
-    amount:Int
+    amount: Float
     description: String
     wallet: Wallet
+    from: Wallet
 }
 
 input CreateTransactionInput {
-    amount:Int
+    amount: Float
     description: String
     walletId: String
+    fromId: String
 }
 
 input CloseWalletInput {
@@ -29,17 +42,28 @@ input CloseWalletInput {
     flag: Boolean
 }
 
+input CreateUserInput {
+    name: String
+    email: String
+}
+
 type Query {
     wallet(id:String):Wallet
     wallets:[Wallet]
     transactions:[Transaction]
     transaction(id: String):Transaction
+    user(id: String):User
+    users:[User]
 }
 
 type Mutation {
-    create:Wallet
-    close(input:CloseWalletInput):Wallet
+    createWallet(userId:String):Wallet
+    closeWallet(input:CloseWalletInput):Wallet
     deposit(input:CreateTransactionInput):String
     withdraw(input:CreateTransactionInput):String
+    transfer(input:CreateTransactionInput):String
+    createUser(input:CreateUserInput):User
+    deleteUser(id: String):User
+    recoverUser(id: String):User
 }
 

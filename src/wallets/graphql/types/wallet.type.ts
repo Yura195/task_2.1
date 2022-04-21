@@ -1,5 +1,6 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { TransactionType } from 'src/transactions/graphql/types/transaction.type';
+import { UserType } from 'src/users/graphql/types/user.type';
 
 @ObjectType()
 export class WalletType {
@@ -20,4 +21,7 @@ export class WalletType {
 
   @Field(() => [TransactionType])
   transactions: TransactionType[];
+
+  @Field(() => UserType)
+  user: UserType;
 }

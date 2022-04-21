@@ -1,4 +1,4 @@
-export interface CloseWalletDto {
-  id: string;
-  flag: boolean;
+export class CloseWalletDto {
+  readonly id: string;
+  readonly flag: boolean;
 }
