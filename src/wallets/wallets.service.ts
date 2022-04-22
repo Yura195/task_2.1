@@ -7,6 +7,7 @@ import { TransactionsService } from 'src/transactions/transactions.service';
 import { CreateTransactionDto } from 'src/transactions/dto/create-transaction.dto';
 import { UsersService } from 'src/users/users.service';
 import { UserEntity } from 'src/users/entities/user.entity';
+import { TransactionEntity } from 'src/transactions/entities/transaction.entity';
 
 @Injectable()
 export class WalletsService {
@@ -15,6 +16,8 @@ export class WalletsService {
     private readonly _walletRepository: Repository<WalletEntity>,
     @InjectRepository(UserEntity)
     private readonly _userRepository: Repository<UserEntity>,
+    @InjectRepository(TransactionEntity)
+    private readonly _transactionsRepository: Repository<TransactionEntity>,
     private readonly _transactionsService: TransactionsService,
     private readonly _userService: UsersService,
   ) {}
@@ -144,9 +147,14 @@ export class WalletsService {
       fromId,
     });
 
+    transaction.wallet = wallet;
+    transaction.from = senderWallet;
+
+    await this._transactionsRepository.save(transaction);
     wallet.transactions.push(transaction);
     senderWallet.transactions.push(transaction);
 
+    await this._walletRepository.save(senderWallet);
     await this._walletRepository.save(wallet);
     return transaction.id;
   }
