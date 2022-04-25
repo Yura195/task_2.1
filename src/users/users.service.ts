@@ -12,7 +12,17 @@ export class UsersService {
   ) {}
 
   async createUser(dto: CreateUserDto): Promise<UserEntity> {
-    const user = await this._userRepository.create(dto);
+    const { name, email } = dto;
+
+    const candidate = await this._userRepository.findOne({ email });
+    if (candidate) {
+      throw new HttpException(
+        'This user with email ' + email + ' already exists',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+
+    const user = await this._userRepository.create({ name, email });
     return await this._userRepository.save(user);
   }
 
