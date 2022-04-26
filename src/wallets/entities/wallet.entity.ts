@@ -23,12 +23,15 @@ export class WalletEntity {
   updatedAt: Date;
 
   @Column({ type: 'float', default: 0 })
-  balance: number;
+  incoming: number;
+
+  @Column({ type: 'float', default: 0 })
+  outgoing: number;
 
   @Column({ type: 'boolean', name: 'account_closed', default: false })
   accountClosed: boolean;
 
-  @OneToMany(() => TransactionEntity, (transaction) => transaction.wallet)
+  @OneToMany(() => TransactionEntity, (transaction) => transaction.to)
   transactions: TransactionEntity[];
 
   @ManyToOne(() => UserEntity, (user) => user.wallets)

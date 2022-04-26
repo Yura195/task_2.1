@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateTables1650607569118 implements MigrationInterface {
-  name = 'CreateTables1650607569118';
+export class CreateTables1650890386015 implements MigrationInterface {
+  name = 'CreateTables1650890386015';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
@@ -9,6 +9,7 @@ export class CreateTables1650607569118 implements MigrationInterface {
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "name" character varying NOT NULL,
                 "email" character varying NOT NULL,
+                "account_closed" boolean NOT NULL DEFAULT false,
                 "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 "deleted_at" TIMESTAMP WITH TIME ZONE,
@@ -21,7 +22,8 @@ export class CreateTables1650607569118 implements MigrationInterface {
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-                "balance" double precision NOT NULL DEFAULT '0',
+                "incoming" double precision NOT NULL DEFAULT '0',
+                "outgoing" double precision NOT NULL DEFAULT '0',
                 "account_closed" boolean NOT NULL DEFAULT false,
                 "userId" uuid,
                 CONSTRAINT "PK_8402e5df5a30a229380e83e4f7e" PRIMARY KEY ("id")
@@ -34,7 +36,7 @@ export class CreateTables1650607569118 implements MigrationInterface {
                 "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 "amount" double precision NOT NULL,
                 "description" character varying NOT NULL,
-                "walletId" uuid,
+                "toId" uuid,
                 "fromId" uuid,
                 CONSTRAINT "PK_a219afd8dd77ed80f5a862f1db9" PRIMARY KEY ("id")
             )
@@ -45,7 +47,7 @@ export class CreateTables1650607569118 implements MigrationInterface {
         `);
     await queryRunner.query(`
             ALTER TABLE "transactions"
-            ADD CONSTRAINT "FK_a88f466d39796d3081cf96e1b66" FOREIGN KEY ("walletId") REFERENCES "wallets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+            ADD CONSTRAINT "FK_8f7e03be67a425cce6663b36255" FOREIGN KEY ("toId") REFERENCES "wallets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
         `);
     await queryRunner.query(`
             ALTER TABLE "transactions"
@@ -58,7 +60,7 @@ export class CreateTables1650607569118 implements MigrationInterface {
             ALTER TABLE "transactions" DROP CONSTRAINT "FK_0697b5941a6016ab531b156049e"
         `);
     await queryRunner.query(`
-            ALTER TABLE "transactions" DROP CONSTRAINT "FK_a88f466d39796d3081cf96e1b66"
+            ALTER TABLE "transactions" DROP CONSTRAINT "FK_8f7e03be67a425cce6663b36255"
         `);
     await queryRunner.query(`
             ALTER TABLE "wallets" DROP CONSTRAINT "FK_2ecdb33f23e9a6fc392025c0b97"

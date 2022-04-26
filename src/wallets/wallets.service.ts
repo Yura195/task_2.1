@@ -24,9 +24,6 @@ export class WalletsService {
 
   async createWallet(userId: string): Promise<WalletEntity> {
     const user = await this._userService.user(userId);
-    if (!user) {
-      throw new HttpException('This user is not found', HttpStatus.NOT_FOUND);
-    }
     const wallet = await this._walletRepository.create({ user });
     user.wallets.push(wallet);
     await this._userRepository.save(user);
@@ -48,7 +45,7 @@ export class WalletsService {
       relations: [
         'user',
         'transactions',
-        'transactions.wallet',
+        'transactions.to',
         'transactions.from',
       ],
     });
@@ -62,8 +59,8 @@ export class WalletsService {
   }
 
   async deposit(dto: CreateTransactionDto): Promise<string> {
-    const { amount, description, walletId } = dto;
-    const wallet = await this.wallet(walletId);
+    const { amount, description, toId } = dto;
+    const wallet = await this.wallet(toId);
 
     if (wallet.accountClosed === true) {
       throw new HttpException(
@@ -72,12 +69,12 @@ export class WalletsService {
       );
     }
 
-    wallet.balance += amount;
+    wallet.incoming += amount;
 
     const transaction = await this._transactionsService.create({
       amount,
       description,
-      walletId,
+      toId,
     });
 
     wallet.transactions.push(transaction);
@@ -87,8 +84,8 @@ export class WalletsService {
   }
 
   async withdraw(dto: CreateTransactionDto): Promise<string> {
-    const { amount, description, walletId } = dto;
-    const wallet = await this.wallet(walletId);
+    const { amount, description, toId } = dto;
+    const wallet = await this.wallet(toId);
     if (wallet.accountClosed === true) {
       throw new HttpException(
         'This wallet is closed',
@@ -96,16 +93,19 @@ export class WalletsService {
       );
     }
 
-    wallet.balance -= amount;
+    const negativeAmount = wallet.incoming < amount;
 
-    if (wallet.balance < 0) {
+    if (negativeAmount) {
       throw new Error('Not enough money');
     }
+
+    wallet.outgoing += amount;
+    wallet.incoming -= amount;
 
     const transaction = await this._transactionsService.create({
       amount,
       description,
-      walletId,
+      toId,
     });
 
     wallet.transactions.push(transaction);
@@ -115,47 +115,36 @@ export class WalletsService {
   }
 
   async transfer(dto: CreateTransactionDto): Promise<string> {
-    const { amount, description, walletId, fromId } = dto;
+    const { amount, description, toId, fromId } = dto;
 
-    const wallet = await this.wallet(walletId);
-
-    if (!wallet) {
-      throw new HttpException('This wallet is not found', HttpStatus.NOT_FOUND);
-    }
+    const wallet = await this.wallet(toId);
 
     const senderWallet = await this.wallet(fromId);
 
-    if (!senderWallet) {
-      throw new HttpException(
-        "This sender's wallet is not found",
-        HttpStatus.NOT_FOUND,
-      );
-    }
+    senderWallet.outgoing += amount;
+    senderWallet.incoming -= amount;
 
-    senderWallet.balance -= amount;
-
-    if (senderWallet.balance < 0) {
+    if (senderWallet.incoming < 0) {
       throw new Error('Not enough money');
     }
 
-    wallet.balance += amount;
+    wallet.incoming += amount;
 
     const transaction = await this._transactionsService.create({
       amount,
       description,
-      walletId,
+      toId,
       fromId,
     });
 
-    transaction.wallet = wallet;
+    transaction.to = wallet;
     transaction.from = senderWallet;
 
     await this._transactionsRepository.save(transaction);
     wallet.transactions.push(transaction);
     senderWallet.transactions.push(transaction);
 
-    await this._walletRepository.save(senderWallet);
-    await this._walletRepository.save(wallet);
+    await this._walletRepository.save([senderWallet, wallet]);
     return transaction.id;
   }
 }

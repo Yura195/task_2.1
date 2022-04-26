@@ -28,6 +28,7 @@ export class UsersService {
 
   async deleteUser(id: string): Promise<UserEntity> {
     const candidate = await this.user(id);
+    candidate.isDeleted = true;
     return await this._userRepository.softRemove(candidate);
   }
 

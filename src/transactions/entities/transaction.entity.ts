@@ -29,7 +29,7 @@ export class TransactionEntity {
   @ManyToOne(() => WalletEntity, (wallet) => wallet.transactions, {
     nullable: true,
   })
-  wallet: WalletEntity;
+  to: WalletEntity;
 
   @ManyToOne(() => WalletEntity, (wallet) => wallet.transactions, {
     nullable: true,

@@ -21,6 +21,9 @@ export class UserEntity {
   @Column({ type: 'varchar', unique: true })
   email: string;
 
+  @Column({ type: 'boolean', name: 'account_closed', default: false })
+  isDeleted: boolean;
+
   @CreateDateColumn({ type: 'timestamp with time zone', name: 'created_at' })
   createdAt: Date;
 

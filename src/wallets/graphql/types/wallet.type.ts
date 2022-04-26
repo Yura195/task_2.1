@@ -1,4 +1,4 @@
-import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { Field, Float, ObjectType } from '@nestjs/graphql';
 import { TransactionType } from 'src/transactions/graphql/types/transaction.type';
 import { UserType } from 'src/users/graphql/types/user.type';
 
@@ -13,8 +13,11 @@ export class WalletType {
   @Field(() => Date)
   updatedAt: Date;
 
-  @Field(() => Int)
-  balance: number;
+  @Field(() => Float)
+  incoming: number;
+
+  @Field(() => Float)
+  outgoing: number;
 
   @Field(() => Boolean)
   accountClosed: boolean;

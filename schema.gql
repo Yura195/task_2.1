@@ -4,7 +4,8 @@ type Wallet {
     id: String
     createdAt: Date
     updatedAt: Date
-    balance: Float
+    incoming: Float
+    outgoing: Float
     accountClosed: Boolean
     transactions: [Transaction]
     user: User
@@ -14,6 +15,7 @@ type User {
     id: String
     name: String
     email: String
+    isDeleted: Boolean
     createdAt: Date
     updatedAt: Date
     deletedAt: Date
@@ -26,14 +28,14 @@ type Transaction {
     updatedAt: Date
     amount: Float
     description: String
-    wallet: Wallet
+    to: Wallet
     from: Wallet
 }
 
 input CreateTransactionInput {
     amount: Float
     description: String
-    walletId: String
+    toId: String
     fromId: String
 }
 

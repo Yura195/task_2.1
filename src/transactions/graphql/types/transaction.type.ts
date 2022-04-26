@@ -19,7 +19,7 @@ export class TransactionType {
   description: string;
 
   @Field(() => WalletType)
-  wallet: WalletType;
+  to: WalletType;
 
   @Field(() => WalletType)
   from: WalletType;
