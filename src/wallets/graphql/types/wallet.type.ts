@@ -19,6 +19,9 @@ export class WalletType {
   @Field(() => Float)
   outgoing: number;
 
+  @Field(() => Float)
+  actuallyBalance: number;
+
   @Field(() => Boolean)
   accountClosed: boolean;
 

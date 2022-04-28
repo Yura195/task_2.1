@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -26,13 +27,15 @@ export class TransactionEntity {
   @Column({ type: 'varchar' })
   description: string;
 
-  @ManyToOne(() => WalletEntity, (wallet) => wallet.transactions, {
+  @ManyToOne(() => WalletEntity, {
     nullable: true,
   })
+  @JoinColumn({ name: 'to_id' })
   to: WalletEntity;
 
-  @ManyToOne(() => WalletEntity, (wallet) => wallet.transactions, {
+  @ManyToOne(() => WalletEntity, {
     nullable: true,
   })
+  @JoinColumn({ name: 'from_id' })
   from: WalletEntity;
 }

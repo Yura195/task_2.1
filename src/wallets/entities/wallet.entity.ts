@@ -36,4 +36,8 @@ export class WalletEntity {
 
   @ManyToOne(() => UserEntity, (user) => user.wallets)
   user: UserEntity;
+
+  get actuallyBalance(): number {
+    return this.incoming - this.outgoing;
+  }
 }

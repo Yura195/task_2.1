@@ -6,6 +6,7 @@ type Wallet {
     updatedAt: Date
     incoming: Float
     outgoing: Float
+    actuallyBalance: Float
     accountClosed: Boolean
     transactions: [Transaction]
     user: User

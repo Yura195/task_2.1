@@ -1,7 +1,7 @@
 import { CloseWalletDto } from './dto/close-wallet.dto';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Connection, Repository } from 'typeorm';
 import { WalletEntity } from './entities/wallet.entity';
 import { TransactionsService } from 'src/transactions/transactions.service';
 import { CreateTransactionDto } from 'src/transactions/dto/create-transaction.dto';
@@ -20,6 +20,7 @@ export class WalletsService {
     private readonly _transactionsRepository: Repository<TransactionEntity>,
     private readonly _transactionsService: TransactionsService,
     private readonly _userService: UsersService,
+    private readonly _connection: Connection,
   ) {}
 
   async createWallet(userId: string): Promise<WalletEntity> {
@@ -60,91 +61,117 @@ export class WalletsService {
 
   async deposit(dto: CreateTransactionDto): Promise<string> {
     const { amount, description, toId } = dto;
-    const wallet = await this.wallet(toId);
+    const queryRunner = await this._connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction('SERIALIZABLE');
 
-    if (wallet.accountClosed === true) {
-      throw new HttpException(
-        'This wallet is closed',
-        HttpStatus.METHOD_NOT_ALLOWED,
-      );
+    try {
+      const wallet = await this.wallet(toId);
+      if (wallet.accountClosed === true) {
+        throw new HttpException(
+          'This wallet is closed',
+          HttpStatus.METHOD_NOT_ALLOWED,
+        );
+      }
+      wallet.incoming += amount;
+
+      const transaction = await this._transactionsService.create({
+        amount,
+        description,
+        toId,
+      });
+
+      wallet.transactions.push(transaction);
+
+      await this._walletRepository.save(wallet);
+      return transaction.id;
+    } catch (e) {
+      await queryRunner.rollbackTransaction();
+    } finally {
+      await queryRunner.release();
     }
-
-    wallet.incoming += amount;
-
-    const transaction = await this._transactionsService.create({
-      amount,
-      description,
-      toId,
-    });
-
-    wallet.transactions.push(transaction);
-
-    await this._walletRepository.save(wallet);
-    return transaction.id;
   }
 
   async withdraw(dto: CreateTransactionDto): Promise<string> {
     const { amount, description, toId } = dto;
-    const wallet = await this.wallet(toId);
-    if (wallet.accountClosed === true) {
-      throw new HttpException(
-        'This wallet is closed',
-        HttpStatus.METHOD_NOT_ALLOWED,
-      );
+    const queryRunner = await this._connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction('SERIALIZABLE');
+
+    try {
+      const wallet = await this.wallet(toId);
+      if (wallet.accountClosed === true) {
+        throw new HttpException(
+          'This wallet is closed',
+          HttpStatus.METHOD_NOT_ALLOWED,
+        );
+      }
+
+      const negativeAmount = wallet.incoming < amount;
+
+      if (negativeAmount) {
+        throw new Error('Not enough money');
+      }
+
+      wallet.outgoing += amount;
+      wallet.incoming -= amount;
+
+      const transaction = await this._transactionsService.create({
+        amount,
+        description,
+        toId,
+      });
+
+      wallet.transactions.push(transaction);
+
+      await this._walletRepository.save(wallet);
+      return transaction.id;
+    } catch (e) {
+      await queryRunner.rollbackTransaction();
+    } finally {
+      await queryRunner.release();
     }
-
-    const negativeAmount = wallet.incoming < amount;
-
-    if (negativeAmount) {
-      throw new Error('Not enough money');
-    }
-
-    wallet.outgoing += amount;
-    wallet.incoming -= amount;
-
-    const transaction = await this._transactionsService.create({
-      amount,
-      description,
-      toId,
-    });
-
-    wallet.transactions.push(transaction);
-
-    await this._walletRepository.save(wallet);
-    return transaction.id;
   }
 
   async transfer(dto: CreateTransactionDto): Promise<string> {
     const { amount, description, toId, fromId } = dto;
+    const queryRunner = await this._connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction('SERIALIZABLE');
+    try {
+      const wallet = await this.wallet(toId);
 
-    const wallet = await this.wallet(toId);
+      const senderWallet = await this.wallet(fromId);
 
-    const senderWallet = await this.wallet(fromId);
+      senderWallet.outgoing += amount;
+      senderWallet.incoming -= amount;
 
-    senderWallet.outgoing += amount;
-    senderWallet.incoming -= amount;
+      if (senderWallet.incoming < 0) {
+        throw new Error('Not enough money');
+      }
 
-    if (senderWallet.incoming < 0) {
-      throw new Error('Not enough money');
+      wallet.incoming += amount;
+
+      const transaction = await this._transactionsService.create({
+        amount,
+        description,
+        toId,
+        fromId,
+      });
+
+      transaction.to = wallet;
+      transaction.from = senderWallet;
+
+      await this._transactionsRepository.save(transaction);
+      wallet.transactions.push(transaction);
+      senderWallet.transactions.push(transaction);
+
+      await this._walletRepository.save([senderWallet, wallet]);
+      return transaction.id;
+    } catch (e) {
+      await queryRunner.rollbackTransaction();
+    } finally {
+      await queryRunner.release();
     }
-
-    wallet.incoming += amount;
-
-    const transaction = await this._transactionsService.create({
-      amount,
-      description,
-      toId,
-      fromId,
-    });
-
-    transaction.to = wallet;
-    transaction.from = senderWallet;
-
-    await this._transactionsRepository.save(transaction);
-    wallet.transactions.push(transaction);
-    senderWallet.transactions.push(transaction);
-
-    await this._walletRepository.save([senderWallet, wallet]);
-    return transaction.id;
   }
 }

@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateTables1650890386015 implements MigrationInterface {
-  name = 'CreateTables1650890386015';
+export class CreateTables1651131889344 implements MigrationInterface {
+  name = 'CreateTables1651131889344';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
@@ -36,8 +36,8 @@ export class CreateTables1650890386015 implements MigrationInterface {
                 "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 "amount" double precision NOT NULL,
                 "description" character varying NOT NULL,
-                "toId" uuid,
-                "fromId" uuid,
+                "to_id" uuid,
+                "from_id" uuid,
                 CONSTRAINT "PK_a219afd8dd77ed80f5a862f1db9" PRIMARY KEY ("id")
             )
         `);
@@ -47,20 +47,20 @@ export class CreateTables1650890386015 implements MigrationInterface {
         `);
     await queryRunner.query(`
             ALTER TABLE "transactions"
-            ADD CONSTRAINT "FK_8f7e03be67a425cce6663b36255" FOREIGN KEY ("toId") REFERENCES "wallets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+            ADD CONSTRAINT "FK_7f681ce46f24957781c744c3561" FOREIGN KEY ("to_id") REFERENCES "wallets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
         `);
     await queryRunner.query(`
             ALTER TABLE "transactions"
-            ADD CONSTRAINT "FK_0697b5941a6016ab531b156049e" FOREIGN KEY ("fromId") REFERENCES "wallets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+            ADD CONSTRAINT "FK_811faa40e043801b0a4b3737d27" FOREIGN KEY ("from_id") REFERENCES "wallets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
         `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-            ALTER TABLE "transactions" DROP CONSTRAINT "FK_0697b5941a6016ab531b156049e"
+            ALTER TABLE "transactions" DROP CONSTRAINT "FK_811faa40e043801b0a4b3737d27"
         `);
     await queryRunner.query(`
-            ALTER TABLE "transactions" DROP CONSTRAINT "FK_8f7e03be67a425cce6663b36255"
+            ALTER TABLE "transactions" DROP CONSTRAINT "FK_7f681ce46f24957781c744c3561"
         `);
     await queryRunner.query(`
             ALTER TABLE "wallets" DROP CONSTRAINT "FK_2ecdb33f23e9a6fc392025c0b97"
