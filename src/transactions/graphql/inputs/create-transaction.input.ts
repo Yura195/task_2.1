@@ -15,7 +15,7 @@ export class CreateTransactionInput {
   @Field(() => String)
   @IsString()
   @IsOptional()
-  walletId: string;
+  toId: string;
 
   @Field(() => String)
   @IsString()

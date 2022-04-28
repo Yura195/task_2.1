@@ -1,5 +1,4 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { ValidationPipe } from 'src/pipes/validation.pipe';
 import { CreateTransactionInput } from 'src/transactions/graphql/inputs/create-transaction.input';
 import { CloseWalletInput } from './graphql/inputs/close-wallet.input';
 import { WalletType } from './graphql/types/wallet.type';
@@ -30,28 +29,26 @@ export class WalletsResolver {
 
   @Mutation(() => WalletType, { name: 'closeWallet' })
   async closeWallet(
-    @Args('input', new ValidationPipe()) input: CloseWalletInput,
+    @Args('input') input: CloseWalletInput,
   ): Promise<WalletType> {
     return await this._walletService.closeWallet(input);
   }
 
   @Mutation(() => WalletType, { name: 'withdraw' })
   async withdraw(
-    @Args('input', new ValidationPipe()) input: CreateTransactionInput,
+    @Args('input') input: CreateTransactionInput,
   ): Promise<string> {
     return await this._walletService.withdraw(input);
   }
 
   @Mutation(() => WalletType, { name: 'deposit' })
-  async deposit(
-    @Args('input', new ValidationPipe()) input: CreateTransactionInput,
-  ): Promise<string> {
+  async deposit(@Args('input') input: CreateTransactionInput): Promise<string> {
     return await this._walletService.deposit(input);
   }
 
   @Mutation(() => WalletType, { name: 'transfer' })
   async transfer(
-    @Args('input', new ValidationPipe()) input: CreateTransactionInput,
+    @Args('input') input: CreateTransactionInput,
   ): Promise<string> {
     return await this._walletService.transfer(input);
   }

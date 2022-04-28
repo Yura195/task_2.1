@@ -1,5 +1,4 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { ValidationPipe } from 'src/pipes/validation.pipe';
 import { CreateUserInput } from './graphql/inputs/create-user.input';
 import { UserType } from './graphql/types/user.type';
 import { UsersService } from './users.service';
@@ -21,9 +20,7 @@ export class UsersResolver {
   }
 
   @Mutation(() => UserType, { name: 'createUser' })
-  async createUser(
-    @Args('input', new ValidationPipe()) input: CreateUserInput,
-  ): Promise<UserType> {
+  async createUser(@Args('input') input: CreateUserInput): Promise<UserType> {
     return await this._userService.createUser(input);
   }
 
