@@ -51,22 +51,83 @@ input CreateUserInput {
 }
 
 type Query {
+
+    """
+    Show one wallet from the database
+    """
     wallet(id:String):Wallet
+
+    """
+    Show all wallets from the database
+    """
     wallets:[Wallet]
+
+    """
+    Show all transactions from the database
+    """
     transactions:[Transaction]
+
+    """
+    Show one transaction from the database
+    """
     transaction(id: String):Transaction
+
+    """
+    Show one user from the database
+    """
     user(id: String):User
+
+    """
+    Show all users from the database
+    """
     users:[User]
 }
 
 type Mutation {
+
+    """
+    Method for create one wallet for one user
+    """
     createWallet(userId:String):Wallet
+
+    """
+    Method for close one wallet, 
+    a closed wallet cannot make transactions
+    """
     closeWallet(input:CloseWalletInput):Wallet
+
+    """
+    Method for deposit, 
+    this method allows to deposit money for one wallet
+    """
     deposit(input:CreateTransactionInput):String
+
+    """
+    Method for withdraw, 
+    this method allows to withdraw money for one wallet
+    """
     withdraw(input:CreateTransactionInput):String
+
+    """
+    Method for withdraw, 
+    this method allows to transfer money between two wallets
+    where one wallet sends money and the other wallet receives money
+    """
     transfer(input:CreateTransactionInput):String
+
+    """
+    Method for create one user, 
+    """
     createUser(input:CreateUserInput):User
+
+    """
+    Method for soft remove one user, 
+    """
     deleteUser(id: String):User
+
+    """
+    Method for recover a deleted user 
+    """
     recoverUser(id: String):User
 }
 
