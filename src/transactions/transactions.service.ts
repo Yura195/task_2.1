@@ -16,7 +16,7 @@ export class TransactionsService {
   async transactions(): Promise<TransactionEntity[]> {
     this._logger.debug('show all transactions method');
     return await this._transactionRepository.find({
-      relations: ['wallet'],
+      relations: ['wallet', 'wallet.to', 'wallet.from'],
     });
   }
 
@@ -24,7 +24,7 @@ export class TransactionsService {
     this._logger.debug('show one transaction method');
     this._logger.debug(id);
     const transaction = await this._transactionRepository.findOne(id, {
-      relations: ['wallet'],
+      relations: ['wallet', 'wallet.to', 'wallet.from'],
     });
     if (!transaction) {
       throw new HttpException('This wallet is not found', HttpStatus.NOT_FOUND);

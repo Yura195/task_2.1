@@ -3,6 +3,7 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
+import { WalletEntity } from 'src/wallets/entities/wallet.entity';
 
 @Injectable()
 export class UsersService {
@@ -11,6 +12,8 @@ export class UsersService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly _userRepository: Repository<UserEntity>,
+    @InjectRepository(WalletEntity)
+    private readonly _walletRepository: Repository<WalletEntity>,
   ) {}
 
   async createUser(dto: CreateUserDto): Promise<UserEntity> {
@@ -35,29 +38,34 @@ export class UsersService {
   async deleteUser(id: string): Promise<UserEntity> {
     this._logger.debug('delete user method');
     this._logger.debug(id);
+
     const candidate = await this.user(id);
     this._logger.debug({ candidate });
-    for (const wallet of candidate.wallets) {
-      wallet.accountLock = true;
-    }
+    candidate.wallets.map(async (wallet) => {
+      wallet.accountLocked = true;
+      await this._walletRepository.save(wallet);
+    });
     return await this._userRepository.softRemove(candidate);
   }
 
   async recoverUser(id: string): Promise<UserEntity> {
     this._logger.debug('recover user method');
-    const candidate = await this.user(id);
+
+    const candidate = await this._userRepository.recover({ id });
     this._logger.debug({ candidate });
-    for (const wallet of candidate.wallets) {
-      wallet.accountLock = false;
-    }
-    return await this._userRepository.recover(candidate);
+    candidate.wallets.map(async (wallet) => {
+      wallet.accountLocked = false;
+      await this._walletRepository.save(wallet);
+    });
+
+    return candidate;
   }
 
   async user(id: string): Promise<UserEntity> {
     this._logger.debug('show one user method');
     this._logger.debug(id);
     const user = await this._userRepository.findOne(id, {
-      relations: ['wallets'],
+      relations: ['wallets', 'wallets.transactions'],
     });
 
     if (!user) {
@@ -70,7 +78,7 @@ export class UsersService {
   async users(): Promise<UserEntity[]> {
     this._logger.debug('show all users method');
     return await this._userRepository.find({
-      relations: ['wallets'],
+      relations: ['wallets', 'wallets.transactions'],
     });
   }
 }

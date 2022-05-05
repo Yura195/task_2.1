@@ -41,7 +41,13 @@ export class WalletsService {
     this._logger.debug('show one wallet method');
     this._logger.debug(id);
     const wallet = await this._walletRepository.findOne(id, {
-      relations: ['user', 'transactions'],
+      relations: [
+        'user',
+        'transactions',
+        'transactions.to',
+        'transactions.from',
+        'fromTransactions',
+      ],
     });
     if (!wallet) {
       throw new HttpException('This wallet is not found', HttpStatus.NOT_FOUND);
@@ -53,7 +59,13 @@ export class WalletsService {
   async wallets(): Promise<WalletEntity[]> {
     this._logger.debug('show all wallets method');
     return await this._walletRepository.find({
-      relations: ['user', 'transactions'],
+      relations: [
+        'user',
+        'transactions',
+        'transactions.to',
+        'transactions.from',
+        'fromTransactions',
+      ],
     });
   }
 
@@ -86,7 +98,7 @@ export class WalletsService {
         );
       }
 
-      if (wallet.accountLock === true) {
+      if (wallet.accountLocked === true) {
         throw new HttpException(
           'This wallet is locked',
           HttpStatus.METHOD_NOT_ALLOWED,
@@ -105,7 +117,6 @@ export class WalletsService {
       this._logger.debug({ transaction });
       await this._transactionsRepository.save(transaction);
       wallet.transactions.push(transaction);
-
       await this._walletRepository.save(wallet);
       return transaction.id;
     } catch (e) {
@@ -134,7 +145,7 @@ export class WalletsService {
         );
       }
 
-      if (wallet.accountLock === true) {
+      if (wallet.accountLocked === true) {
         throw new HttpException(
           'This wallet is locked',
           HttpStatus.METHOD_NOT_ALLOWED,
@@ -189,7 +200,7 @@ export class WalletsService {
         );
       }
 
-      if (wallet.accountLock === true) {
+      if (wallet.accountLocked === true) {
         throw new HttpException(
           'This wallet is locked',
           HttpStatus.METHOD_NOT_ALLOWED,
@@ -203,7 +214,7 @@ export class WalletsService {
         );
       }
 
-      if (senderWallet.accountLock === true) {
+      if (senderWallet.accountLocked === true) {
         throw new HttpException(
           'This wallet is locked',
           HttpStatus.METHOD_NOT_ALLOWED,
@@ -213,7 +224,7 @@ export class WalletsService {
       senderWallet.outgoing += amount;
       senderWallet.incoming -= amount;
 
-      if (senderWallet.incoming < 0) {
+      if (senderWallet.incoming > amount) {
         throw new Error('Not enough money');
       }
 
@@ -229,9 +240,10 @@ export class WalletsService {
       this._logger.debug({ transaction });
       await this._transactionsRepository.save(transaction);
       wallet.transactions.push(transaction);
-      senderWallet.transactions.push(transaction);
+      senderWallet.fromTransactions.push(transaction);
+      await this._walletRepository.save(wallet);
+      await this._walletRepository.save(senderWallet);
 
-      await this._walletRepository.save([senderWallet, wallet]);
       return transaction.id;
     } catch (e) {
       this._logger.error(e, 'transfer method error');

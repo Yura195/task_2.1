@@ -33,7 +33,7 @@ export class WalletEntity {
   accountClosed: boolean;
 
   @Column({ type: 'boolean', name: 'account_lock', default: false })
-  accountLock: boolean;
+  accountLocked: boolean;
 
   @OneToMany(() => TransactionEntity, (transaction) => transaction.to)
   transactions: TransactionEntity[];
