@@ -27,13 +27,13 @@ export class TransactionEntity {
   @Column({ type: 'varchar' })
   description: string;
 
-  @ManyToOne(() => WalletEntity, {
+  @ManyToOne(() => WalletEntity, (wallet) => wallet.transactions, {
     nullable: true,
   })
   @JoinColumn({ name: 'to_id' })
   to: WalletEntity;
 
-  @ManyToOne(() => WalletEntity, {
+  @ManyToOne(() => WalletEntity, (wallet) => wallet.fromTransactions, {
     nullable: true,
   })
   @JoinColumn({ name: 'from_id' })

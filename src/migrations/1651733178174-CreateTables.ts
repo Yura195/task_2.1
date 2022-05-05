@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateTables1651131889344 implements MigrationInterface {
-  name = 'CreateTables1651131889344';
+export class CreateTables1651733178174 implements MigrationInterface {
+  name = 'CreateTables1651733178174';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
@@ -9,7 +9,6 @@ export class CreateTables1651131889344 implements MigrationInterface {
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "name" character varying NOT NULL,
                 "email" character varying NOT NULL,
-                "account_closed" boolean NOT NULL DEFAULT false,
                 "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 "deleted_at" TIMESTAMP WITH TIME ZONE,
@@ -25,7 +24,8 @@ export class CreateTables1651131889344 implements MigrationInterface {
                 "incoming" double precision NOT NULL DEFAULT '0',
                 "outgoing" double precision NOT NULL DEFAULT '0',
                 "account_closed" boolean NOT NULL DEFAULT false,
-                "userId" uuid,
+                "account_lock" boolean NOT NULL DEFAULT false,
+                "user_id" uuid,
                 CONSTRAINT "PK_8402e5df5a30a229380e83e4f7e" PRIMARY KEY ("id")
             )
         `);
@@ -43,7 +43,7 @@ export class CreateTables1651131889344 implements MigrationInterface {
         `);
     await queryRunner.query(`
             ALTER TABLE "wallets"
-            ADD CONSTRAINT "FK_2ecdb33f23e9a6fc392025c0b97" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+            ADD CONSTRAINT "FK_92558c08091598f7a4439586cda" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
         `);
     await queryRunner.query(`
             ALTER TABLE "transactions"
@@ -63,7 +63,7 @@ export class CreateTables1651131889344 implements MigrationInterface {
             ALTER TABLE "transactions" DROP CONSTRAINT "FK_7f681ce46f24957781c744c3561"
         `);
     await queryRunner.query(`
-            ALTER TABLE "wallets" DROP CONSTRAINT "FK_2ecdb33f23e9a6fc392025c0b97"
+            ALTER TABLE "wallets" DROP CONSTRAINT "FK_92558c08091598f7a4439586cda"
         `);
     await queryRunner.query(`
             DROP TABLE "transactions"

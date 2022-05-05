@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -31,10 +32,17 @@ export class WalletEntity {
   @Column({ type: 'boolean', name: 'account_closed', default: false })
   accountClosed: boolean;
 
+  @Column({ type: 'boolean', name: 'account_lock', default: false })
+  accountLock: boolean;
+
   @OneToMany(() => TransactionEntity, (transaction) => transaction.to)
   transactions: TransactionEntity[];
 
+  @OneToMany(() => TransactionEntity, (transaction) => transaction.from)
+  fromTransactions: TransactionEntity[];
+
   @ManyToOne(() => UserEntity, (user) => user.wallets)
+  @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
   get actuallyBalance(): number {

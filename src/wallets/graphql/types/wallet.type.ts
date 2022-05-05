@@ -25,6 +25,9 @@ export class WalletType {
   @Field(() => Boolean)
   accountClosed: boolean;
 
+  @Field(() => Boolean)
+  accountLock: boolean;
+
   @Field(() => [TransactionType])
   transactions: TransactionType[];
 
